@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Settings — CyberFeed{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">Settings</h1>
+
+<div role="tablist" class="tabs tabs-bordered">
+  <input type="radio" name="settings-tabs" role="tab" class="tab" aria-label="Sources" {% if tab != 'categories' and tab != 'notifications' and tab != 'profile' %}checked{% endif %}>
+  <div role="tabpanel" class="tab-content p-4">
+    <!-- Sources management -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold">Feed Sources</h2>
+      {% if user.role in ('admin', 'editor') %}
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('add-source-modal').showModal()">
+        + Add Source
+      </button>
+      {% endif %}
+    </div>
+
+    {% if sources %}
+    <div class="overflow-x-auto">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Platform</th>
+            <th>Status</th>
+            <th>Last Collected</th>
+            <th>Interval</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for source in sources %}
+          <tr>
+            <td class="font-medium">{{ source.name }}</td>
+            <td><span class="badge badge-ghost badge-sm">{{ source.platform }}</span></td>
+            <td>
+              {% if source.is_active %}
+              <span class="badge badge-success badge-sm">Active</span>
+              {% else %}
+              <span class="badge badge-error badge-sm">Inactive</span>
+              {% endif %}
+              {% if source.error_count > 0 %}
+              <span class="badge badge-warning badge-sm" title="{{ source.last_error or '' }}">{{ source.error_count }} errors</span>
+              {% endif %}
+            </td>
+            <td class="text-sm text-base-content/60">
+              {% if source.last_collected_at %}
+              {{ source.last_collected_at | timeago }}
+              {% else %}
+              Never
+              {% endif %}
+            </td>
+            <td>{{ source.collect_interval_min }}min</td>
+            <td class="flex gap-1">
+              {% if user.role in ('admin', 'editor') %}
+              <button class="btn btn-ghost btn-xs"
+                      hx-post="/htmx/sources/{{ source.id }}/collect"
+                      hx-swap="none">
+                Collect
+              </button>
+              <button class="btn btn-ghost btn-xs text-error"
+                      hx-delete="/htmx/sources/{{ source.id }}"
+                      hx-confirm="Delete '{{ source.name }}'? Collected articles are kept."
+                      hx-target="closest tr"
+                      hx-swap="outerHTML swap:0.2s">
+                Delete
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-base-content/50 text-center py-8">No sources configured yet.</p>
+    {% endif %}
+
+    <!-- Add Source Modal -->
+    <dialog id="add-source-modal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Feed Source</h3>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">&times;</button>
+        </form>
+        {% include "partials/source_form.html" %}
+      </div>
+    </dialog>
+  </div>
+
+  <input type="radio" name="settings-tabs" role="tab" class="tab" aria-label="Categories" {% if tab == 'categories' %}checked{% endif %}>
+  <div role="tabpanel" class="tab-content p-4">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold">Categories</h2>
+      {% if user.role in ('admin', 'editor') %}
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('add-category-modal').showModal()">
+        + Add Category
+      </button>
+      {% endif %}
+    </div>
+
+    {% if all_categories %}
+    <div class="overflow-x-auto">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Color</th>
+            <th>Articles</th>
+            <th>Order</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in all_categories %}
+          <tr>
+            <td class="font-medium">{{ cat.name }}</td>
+            <td>
+              <span class="badge badge-sm" style="background-color: {{ cat.color or '#666' }}; color: white">
+                {{ cat.color or '#666' }}
+              </span>
+            </td>
+            <td>{{ cat.article_count or 0 }}</td>
+            <td>{{ cat.sort_order }}</td>
+            <td>
+              {% if user.role in ('admin', 'editor') %}
+              <button class="btn btn-ghost btn-xs text-error"
+                      hx-delete="/htmx/categories/{{ cat.id }}"
+                      hx-confirm="Delete category '{{ cat.name }}'?"
+                      hx-target="closest tr"
+                      hx-swap="outerHTML swap:0.2s">
+                Delete
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-base-content/50 text-center py-6">No categories yet.</p>
+    {% endif %}
+
+    <dialog id="add-category-modal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Category</h3>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">&times;</button>
+        </form>
+        {% include "partials/category_form.html" %}
+      </div>
+    </dialog>
+  </div>
+
+  <input type="radio" name="settings-tabs" role="tab" class="tab" aria-label="Notifications" {% if tab == 'notifications' %}checked{% endif %}>
+  <div role="tabpanel" class="tab-content p-4">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold">Notification Rules</h2>
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('add-notification-modal').showModal()">
+        + Add Rule
+      </button>
+    </div>
+    {% if not channels %}
+    <div class="alert alert-warning mb-4">
+      <span>No notification channels enabled. Set <code>TELEGRAM_ENABLED=true</code> or <code>EMAIL_ENABLED=true</code> in your <code>.env</code> file.</span>
+    </div>
+    {% endif %}
+
+    {% if notification_rules %}
+    <div class="overflow-x-auto mb-4">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th>Destination</th>
+            <th>Keywords</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for rule in notification_rules %}
+          <tr>
+            <td><span class="badge badge-ghost badge-sm">{{ rule.channel }}</span></td>
+            <td class="text-sm font-mono">{{ rule.destination[:20] }}{% if rule.destination|length > 20 %}…{% endif %}</td>
+            <td class="text-sm text-base-content/60">
+              {% if rule.keywords %}{{ rule.keywords | join(', ') }}{% else %}<em>all articles</em>{% endif %}
+            </td>
+            <td>
+              {% if rule.is_active %}
+              <span class="badge badge-success badge-sm">Active</span>
+              {% else %}
+              <span class="badge badge-ghost badge-sm">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <button class="btn btn-ghost btn-xs text-error"
+                      hx-delete="/htmx/notifications/{{ rule.id }}"
+                      hx-confirm="Delete this notification rule?"
+                      hx-target="closest tr"
+                      hx-swap="outerHTML swap:0.2s">
+                Delete
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-base-content/50 text-center py-6">No notification rules yet. Add one to get notified about new articles.</p>
+    {% endif %}
+
+    <dialog id="add-notification-modal" class="modal">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">Add Notification Rule</h3>
+        <form method="dialog">
+          <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">&times;</button>
+        </form>
+        {% include "partials/notification_form.html" %}
+      </div>
+    </dialog>
+  </div>
+
+  <input type="radio" name="settings-tabs" role="tab" class="tab" aria-label="Profile" {% if tab == 'profile' %}checked{% endif %}>
+  <div role="tabpanel" class="tab-content p-4">
+    <h2 class="text-lg font-semibold mb-4">Profile</h2>
+    <div class="max-w-sm">
+      <div class="form-control mb-3">
+        <label class="label"><span class="label-text">Username</span></label>
+        <input type="text" value="{{ user.username }}" class="input input-bordered" disabled>
+      </div>
+      <div class="form-control mb-3">
+        <label class="label"><span class="label-text">Email</span></label>
+        <input type="text" value="{{ user.email or '' }}" class="input input-bordered" disabled>
+      </div>
+      <div class="form-control mb-3">
+        <label class="label"><span class="label-text">Role</span></label>
+        <input type="text" value="{{ user.role }}" class="input input-bordered" disabled>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1d4ed8">
+  <link rel="manifest" href="/static/manifest.json">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+  <title>{% block title %}CyberFeed{% endblock %}</title>
+  <style>
+    .htmx-swapping { opacity: 0.5; transition: opacity 0.15s ease-out; }
+    .toast-enter { animation: toast-in 0.3s ease-out; }
+    @keyframes toast-in { from { opacity:0; transform:translateX(100%); } to { opacity:1; transform:translateX(0); } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-base-200">
+  <!-- Navbar -->
+  <nav class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
+    <div class="navbar-start">
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16"/>
+          </svg>
+        </div>
+        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
+          <li><a href="/">Feed</a></li>
+          <li><a href="/settings">Settings</a></li>
+          {% if user and user.role == "admin" %}
+          <li><a href="/admin/users">Users</a></li>
+          {% endif %}
+        </ul>
+      </div>
+      <a href="/" class="btn btn-ghost text-xl font-bold">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"/>
+        </svg>
+        CyberFeed
+      </a>
+    </div>
+    <div class="navbar-center hidden lg:flex">
+      <ul class="menu menu-horizontal px-1">
+        <li><a href="/">Feed</a></li>
+        <li><a href="/settings">Settings</a></li>
+        {% if user and user.role == "admin" %}
+        <li><a href="/admin/users">Users</a></li>
+        {% endif %}
+      </ul>
+    </div>
+    <div class="navbar-end gap-2">
+      <!-- Theme toggle -->
+      <button class="btn btn-ghost btn-circle" onclick="toggleTheme()" title="Toggle theme">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+      </button>
+      {% if user %}
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+          <div class="bg-primary text-primary-content rounded-full w-10">
+            <span>{{ user.username[0] | upper }}</span>
+          </div>
+        </div>
+        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-52 p-2 shadow">
+          <li class="menu-title">{{ user.username }} ({{ user.role }})</li>
+          <li><a href="/settings">Settings</a></li>
+          <li><a href="#" onclick="logout()">Logout</a></li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Flash messages -->
+  {% if flash_message %}
+  <div class="container mx-auto px-4 mt-4 max-w-5xl">
+    <div class="alert alert-{{ flash_type or 'info' }}">
+      <span>{{ flash_message }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Main content -->
+  <main class="container mx-auto px-4 py-6 max-w-5xl">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Toast container -->
+  <div id="toast-container" class="toast toast-end z-50"></div>
+
+  <script src="/static/js/app.js"></script>
+  <script>
+    async function logout() {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+      window.location.href = "/login";
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

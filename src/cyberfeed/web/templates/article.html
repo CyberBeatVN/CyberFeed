@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title }} — CyberFeed{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <!-- Breadcrumb -->
+  <div class="text-sm breadcrumbs mb-4">
+    <ul>
+      <li><a href="/">Feed</a></li>
+      {% if article.category %}
+      <li><a href="/category/{{ article.category.slug }}">{{ article.category.name }}</a></li>
+      {% endif %}
+      <li>Article</li>
+    </ul>
+  </div>
+
+  <article class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <!-- Header -->
+      <h1 class="card-title text-2xl">{{ article.title }}</h1>
+
+      <div class="flex flex-wrap items-center gap-2 text-sm text-base-content/60 mt-1">
+        {% if article.category %}
+        <a href="/category/{{ article.category.slug }}"
+           class="badge badge-sm" style="background-color: {{ article.category.color or '#666' }}; color: white">
+          {{ article.category.name }}
+        </a>
+        {% endif %}
+        <span class="badge badge-ghost badge-sm">{{ article.source_platform }}</span>
+        <span>{{ article.source_name }}</span>
+        {% if article.author %}
+        <span>by {{ article.author }}</span>
+        {% endif %}
+        <span>&middot;</span>
+        <time>{{ article.collected_at.strftime('%b %d, %Y %H:%M') }}</time>
+        {% if article.published_at %}
+        <span>(published {{ article.published_at.strftime('%b %d, %Y') }})</span>
+        {% endif %}
+      </div>
+
+      <!-- Tags -->
+      <div class="flex flex-wrap gap-1 mt-2" id="article-tags">
+        {% for tag in article.tags %}
+        <a href="/tag/{{ tag.name }}" class="badge badge-outline badge-sm hover:badge-primary">{{ tag.name }}</a>
+        {% endfor %}
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2 mt-3">
+        <button class="btn btn-sm {% if article.is_bookmarked %}btn-warning{% else %}btn-outline{% endif %}"
+                hx-post="/htmx/toggle-bookmark/{{ article.id }}"
+                hx-swap="none"
+                onclick="this.classList.toggle('btn-warning'); this.classList.toggle('btn-outline')">
+          {% if article.is_bookmarked %}Bookmarked{% else %}Bookmark{% endif %}
+        </button>
+        <button class="btn btn-sm {% if article.is_read %}btn-success{% else %}btn-outline{% endif %}"
+                hx-post="/htmx/toggle-read/{{ article.id }}"
+                hx-swap="none"
+                onclick="this.classList.toggle('btn-success'); this.classList.toggle('btn-outline')">
+          {% if article.is_read %}Read{% else %}Mark read{% endif %}
+        </button>
+        <a href="{{ article.url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline">
+          Open source &rarr;
+        </a>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Summary -->
+      {% if article.summary %}
+      <div class="bg-base-200 rounded-lg p-4 mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="font-semibold text-sm">Summary</h3>
+          <span class="badge badge-xs badge-ghost">{{ article.summary_method or 'auto' }}</span>
+        </div>
+        <p class="text-sm">{{ article.summary }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Image -->
+      {% if article.image_url %}
+      <figure class="mb-4">
+        <img src="{{ article.image_url }}" alt="{{ article.title }}" class="rounded-lg max-h-96 object-cover w-full">
+      </figure>
+      {% endif %}
+
+      <!-- Content -->
+      <div class="prose prose-sm max-w-none">
+        {{ article.content | safe }}
+      </div>
+    </div>
+  </article>
+</div>
+{% endblock %}

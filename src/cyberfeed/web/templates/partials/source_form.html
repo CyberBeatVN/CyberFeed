@@ -1,0 +1,60 @@
+<form id="add-source-form" class="flex flex-col gap-3 mt-4"
+      hx-post="/htmx/sources" hx-swap="none">
+  <label class="form-control">
+    <span class="label-text">Name</span>
+    <input type="text" name="name" class="input input-bordered" placeholder="My RSS Feed" required>
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Platform</span>
+    <select name="platform" class="select select-bordered" required>
+      <option value="rss">RSS / Atom</option>
+      <option value="newspaper">Newspaper (website)</option>
+      <option value="x.com">X.com (Twitter)</option>
+    </select>
+  </label>
+
+  <div class="form-control">
+    <span class="label-text">Feed URL</span>
+    <div class="join w-full">
+      <input type="url" name="url" class="input input-bordered join-item w-full" placeholder="https://example.com/rss" required>
+      <button type="button" class="btn btn-outline join-item"
+              hx-post="/htmx/sources/probe"
+              hx-include="[name='url'],[name='platform']"
+              hx-target="#probe-result"
+              hx-swap="innerHTML">
+        Check
+      </button>
+    </div>
+  </div>
+  <div id="probe-result"></div>
+
+  <label class="form-control" id="language-field" style="display:none">
+    <span class="label-text">Language code</span>
+    <input type="text" name="language" class="input input-bordered" placeholder="en" value="en">
+    <span class="label-text-alt text-base-content/50">e.g. en, vi, zh, ja, ko, de, fr</span>
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Category (optional)</span>
+    <select name="category_id" class="select select-bordered">
+      <option value="">None</option>
+      {% for cat in categories %}
+      <option value="{{ cat.id }}">{{ cat.name }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Collection interval (minutes)</span>
+    <input type="number" name="collect_interval_min" class="input input-bordered" value="30" min="5" max="1440">
+  </label>
+
+  <button type="submit" class="btn btn-primary">Add Source</button>
+  <script>
+    document.querySelector('[name="platform"]').addEventListener('change', function() {
+      document.getElementById('language-field').style.display =
+        this.value === 'newspaper' ? '' : 'none';
+    });
+  </script>
+</form>

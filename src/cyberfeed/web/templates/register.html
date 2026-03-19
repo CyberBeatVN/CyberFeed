@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <title>Register — CyberFeed</title>
+</head>
+<body class="min-h-screen bg-base-200 flex items-center justify-center">
+  <div class="card w-full max-w-sm bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-2xl font-bold justify-center mb-2">Create Account</h2>
+
+      {% if error %}
+      <div class="alert alert-error text-sm">
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="/register" class="flex flex-col gap-3">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Username</span></label>
+          <input type="text" name="username" class="input input-bordered w-full" placeholder="Username" minlength="3" required autofocus />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Email (optional)</span></label>
+          <input type="email" name="email" class="input input-bordered w-full" placeholder="Email (optional)" />
+        </div>
+        <div class="form-control">
+          <label class="label"><span class="label-text">Password</span></label>
+          <input type="password" name="password" class="input input-bordered w-full" placeholder="Password" minlength="8" required />
+        </div>
+        <button type="submit" class="btn btn-primary w-full">Register</button>
+      </form>
+
+      <div class="divider text-xs">OR</div>
+      <a href="/login" class="btn btn-outline btn-sm w-full">Back to login</a>
+    </div>
+  </div>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

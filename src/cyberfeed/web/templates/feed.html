@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Feed — CyberFeed{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row gap-4">
+  <!-- Category sidebar -->
+  <aside class="lg:w-56 shrink-0">
+    <div class="collapse collapse-arrow lg:collapse-open bg-base-100 rounded-box shadow-sm">
+      <input type="checkbox" class="lg:hidden">
+      <div class="collapse-title font-semibold">Categories</div>
+      <div class="collapse-content">
+        <ul class="menu menu-sm">
+          <li>
+            <a href="/" class="{% if not current_category %}active{% endif %}">
+              All
+              <span class="badge badge-sm">{{ total_articles }}</span>
+            </a>
+          </li>
+          {% for cat in categories %}
+          <li>
+            <a href="/category/{{ cat.slug }}"
+               class="{% if current_category == cat.slug %}active{% endif %}"
+               style="border-left: 3px solid {{ cat.color or '#666' }}">
+              {% if cat.icon %}{{ cat.icon }}{% endif %} {{ cat.name }}
+              <span class="badge badge-sm">{{ cat.article_count }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- Popular tags -->
+    <div class="mt-4 bg-base-100 rounded-box shadow-sm p-4 hidden lg:block">
+      <h3 class="font-semibold text-sm mb-2">Popular Tags</h3>
+      <div class="flex flex-wrap gap-1">
+        {% for tag in popular_tags %}
+        <a href="/tag/{{ tag.name }}" class="badge badge-outline badge-sm hover:badge-primary {% if current_tag == tag.name %}badge-primary{% endif %}">
+          {{ tag.name }}
+        </a>
+        {% endfor %}
+        {% if not popular_tags %}
+        <span class="text-sm text-base-content/50">No tags yet</span>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main content area -->
+  <div class="flex-grow flex flex-col gap-4">
+    <!-- Search & filter bar -->
+    <div class="flex flex-wrap gap-2 items-center">
+      <input type="search" name="q" placeholder="Search articles..."
+             class="input input-bordered flex-grow min-w-0"
+             hx-get="/htmx/articles" hx-trigger="keyup changed delay:300ms"
+             hx-target="#article-list" hx-swap="innerHTML"
+             hx-include="[name='platform'],[name='is_bookmarked']"
+             value="{{ q or '' }}">
+      <input type="hidden" name="category" value="{{ current_category or '' }}">
+      <input type="hidden" name="tag" value="{{ current_tag or '' }}">
+      <select name="platform" class="select select-bordered select-sm"
+              hx-get="/htmx/articles" hx-trigger="change" hx-target="#article-list" hx-swap="innerHTML"
+              hx-include="[name='q'],[name='is_bookmarked']">
+        <option value="">All platforms</option>
+        <option value="rss" {% if platform == 'rss' %}selected{% endif %}>RSS</option>
+        <option value="newspaper" {% if platform == 'newspaper' %}selected{% endif %}>Newspaper</option>
+        <option value="x.com" {% if platform == 'x.com' %}selected{% endif %}>X.com</option>
+      </select>
+      <label class="btn btn-outline btn-sm swap {% if is_bookmarked %}btn-active{% endif %}">
+        <input type="checkbox" name="is_bookmarked" value="true"
+               {% if is_bookmarked %}checked{% endif %}
+               hx-get="/htmx/articles" hx-trigger="change" hx-target="#article-list" hx-swap="innerHTML"
+               hx-include="[name='q'],[name='platform']">
+        <span class="swap-on">Bookmarks</span>
+        <span class="swap-off">Bookmarks</span>
+      </label>
+    </div>
+
+    <!-- Active filter indicators -->
+    {% if current_tag %}
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-base-content/60">Filtered by tag:</span>
+      <span class="badge badge-primary gap-1">
+        {{ current_tag }}
+        <a href="/" class="ml-1">&times;</a>
+      </span>
+    </div>
+    {% endif %}
+    {% if current_category %}
+    <div class="flex items-center gap-2">
+      <span class="text-sm text-base-content/60">Category:</span>
+      <span class="badge gap-1" style="background-color: {{ category_color or '#666' }}; color: white">
+        {{ current_category_name or current_category }}
+        <a href="/" class="ml-1">&times;</a>
+      </span>
+    </div>
+    {% endif %}
+
+    <!-- Article list -->
+    <div id="article-list">
+      {% include "partials/article_list.html" %}
+    </div>
+  </div>
+</div>
+{% endblock %}

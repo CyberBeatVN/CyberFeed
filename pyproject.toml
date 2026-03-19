@@ -1,0 +1,86 @@
+[project]
+name = "cyberfeed"
+version = "0.1.0"
+description = "Information collecting system — aggregates news from X.com, RSS, and newspapers"
+readme = "README.md"
+authors = [
+    { name = "thientc", email = "thientc84@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    # Web framework
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+
+    # Database
+    "sqlalchemy[asyncio]>=2.0",
+    "aiosqlite>=0.20",
+    "alembic>=1.14",
+
+    # Auth & Security
+    "pyjwt>=2.9",
+    "bcrypt>=4.2",
+    "cryptography>=43",
+    "nh3>=0.2",
+
+    # Config
+    "pydantic-settings>=2.5",
+
+    # Collectors
+    "feedparser>=6.0",
+    "newspaper4k>=0.9",
+    "httpx>=0.27",
+
+    # Scheduler
+    "apscheduler>=3.10",
+
+    # Notifications
+    "python-telegram-bot>=21",
+    "aiosmtplib>=3",
+
+    # LLM (optional — gracefully degrades when not configured)
+    "litellm>=1.50",
+
+    # Logging
+    "structlog>=24",
+
+    # Rate limiting
+    "slowapi>=0.1",
+
+    # OPML
+    "lxml>=5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+    "ruff>=0.7",
+    "factory-boy>=3.3",
+    "respx>=0.22",
+    "pytest-cov>=5",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.9,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "S", "B", "UP", "N", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S107"]
+"src/cyberfeed/api/**" = ["B008"]
+"src/cyberfeed/web/**" = ["B008"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

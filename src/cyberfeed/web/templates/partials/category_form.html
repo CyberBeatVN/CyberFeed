@@ -1,0 +1,19 @@
+<form id="add-category-form" class="flex flex-col gap-3 mt-4"
+      hx-post="/htmx/categories" hx-swap="none">
+  <label class="form-control">
+    <span class="label-text">Name</span>
+    <input type="text" name="name" class="input input-bordered" placeholder="Security" required>
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Color</span>
+    <input type="color" name="color" class="input input-bordered h-10 w-20 p-1" value="#6b7280">
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Sort order</span>
+    <input type="number" name="sort_order" class="input input-bordered" value="0" min="0">
+  </label>
+
+  <button type="submit" class="btn btn-primary">Add Category</button>
+</form>

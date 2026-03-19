@@ -1,0 +1,27 @@
+<form id="add-notification-form" class="flex flex-col gap-3 mt-4"
+      hx-post="/htmx/notifications" hx-swap="none">
+  <label class="form-control">
+    <span class="label-text">Channel</span>
+    <select name="channel" class="select select-bordered" required>
+      {% for ch in channels %}
+      <option value="{{ ch }}">{{ ch | capitalize }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Destination</span>
+    <input type="text" name="destination" class="input input-bordered"
+           placeholder="Chat ID or email address" required>
+    <span class="label-text-alt">Telegram chat ID or email address</span>
+  </label>
+
+  <label class="form-control">
+    <span class="label-text">Keywords (comma-separated, optional)</span>
+    <input type="text" name="keywords" class="input input-bordered"
+           placeholder="ransomware, CVE, zero-day">
+    <span class="label-text-alt">Leave empty to match all articles</span>
+  </label>
+
+  <button type="submit" class="btn btn-primary">Add Rule</button>
+</form>

@@ -1,0 +1,57 @@
+<div class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow" id="article-{{ article.id }}">
+  <div class="card-body p-4">
+    <div class="flex justify-between items-start gap-2">
+      <div class="flex-grow min-w-0">
+        <a href="/article/{{ article.id }}" class="card-title text-base link link-hover line-clamp-2">
+          {{ article.title }}
+        </a>
+        <div class="flex flex-wrap gap-1 mt-1 text-sm text-base-content/60">
+          {% if article.category %}
+          <a href="/category/{{ article.category.slug }}"
+             class="badge badge-sm" style="background-color: {{ article.category.color or '#666' }}; color: white">
+            {{ article.category.name }}
+          </a>
+          {% endif %}
+          <span class="badge badge-ghost badge-sm">{{ article.source_platform }}</span>
+          <span class="truncate max-w-32">{{ article.source_name }}</span>
+          <span>&middot;</span>
+          {% if article.published_at %}
+          <time title="Published">{{ article.published_at | timeago }}</time>
+          {% else %}
+          <time title="Collected">{{ article.collected_at | timeago }}</time>
+          {% endif %}
+        </div>
+        {% if article.tags %}
+        <div class="flex flex-wrap gap-1 mt-1">
+          {% for tag in article.tags[:5] %}
+          <a href="/tag/{{ tag.name }}" class="badge badge-outline badge-xs hover:badge-primary">{{ tag.name }}</a>
+          {% endfor %}
+          {% if article.tags | length > 5 %}
+          <span class="badge badge-ghost badge-xs">+{{ article.tags | length - 5 }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% if article.image_url %}
+      <img src="{{ article.image_url }}" alt="" class="w-20 h-20 rounded object-cover hidden sm:block shrink-0" loading="lazy" onerror="this.style.display='none'">
+      {% endif %}
+    </div>
+    {% if article.summary %}
+    <p class="text-sm mt-2 text-base-content/80 line-clamp-2">{{ article.summary }}</p>
+    {% endif %}
+    <div class="card-actions justify-end mt-2">
+      <button class="btn btn-ghost btn-xs"
+              hx-post="/htmx/toggle-bookmark/{{ article.id }}"
+              hx-target="#article-{{ article.id }}"
+              hx-swap="outerHTML">
+        {% if article.is_bookmarked %}&#9733;{% else %}&#9734;{% endif %}
+      </button>
+      <button class="btn btn-ghost btn-xs"
+              hx-post="/htmx/toggle-read/{{ article.id }}"
+              hx-target="#article-{{ article.id }}"
+              hx-swap="outerHTML">
+        {% if article.is_read %}&#10003; Read{% else %}Mark read{% endif %}
+      </button>
+    </div>
+  </div>
+</div>

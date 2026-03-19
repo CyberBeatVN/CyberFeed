@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}User Management — CyberFeed{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4">User Management</h1>
+
+<div class="overflow-x-auto">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Last Login</th>
+        <th>Created</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td class="font-medium">{{ u.username }}</td>
+        <td>{{ u.email or '—' }}</td>
+        <td>
+          <select class="select select-bordered select-xs"
+                  hx-patch="/htmx/admin/users/{{ u.id }}/role"
+                  hx-swap="none"
+                  hx-include="this"
+                  name="role"
+                  {% if u.id == user.id %}disabled title="Cannot change own role"{% endif %}>
+            <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="editor" {% if u.role == 'editor' %}selected{% endif %}>Editor</option>
+            <option value="reader" {% if u.role == 'reader' %}selected{% endif %}>Reader</option>
+          </select>
+        </td>
+        <td>
+          {% if u.is_active %}
+          <span class="badge badge-success badge-sm">Active</span>
+          {% else %}
+          <span class="badge badge-error badge-sm">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="text-sm">{{ u.last_login_at.strftime('%b %d, %Y') if u.last_login_at else 'Never' }}</td>
+        <td class="text-sm">{{ u.created_at.strftime('%b %d, %Y') }}</td>
+        <td>
+          {% if u.id != user.id %}
+          <button class="btn btn-ghost btn-xs text-error"
+                  hx-delete="/htmx/admin/users/{{ u.id }}"
+                  hx-confirm="Delete user {{ u.username }}? This cannot be undone."
+                  hx-target="closest tr"
+                  hx-swap="outerHTML">
+            Delete
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
