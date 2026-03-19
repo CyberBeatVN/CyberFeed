@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info
+.eggs/
+*.whl
+build/
+dist/
+sdist/
+wheels/
+
+# Virtual environments
+.venv
+
+# Environment / secrets
+.env
+
+# Database
+*.db
+*.sqlite3
+data/
+
+# Testing
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Linting / type checking
+.ruff_cache/
+.mypy_cache/
+.pytype/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (Tailwind build)
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# uv
+.uv/
+
+# Claude Code
+.claude/
+
+# Jupyter
+.ipynb_checkpoints/
